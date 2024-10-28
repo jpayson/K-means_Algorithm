@@ -24,7 +24,17 @@ MARKERS = {0:'o', 1:'s', 2:'v', 3:'^', 4:'<', 5:'>'}
 # Constants used to describe elements of the dataset
 DATA_NAME, DATA_NAME_PLURAL = "Country", "Countries"
 DATA_X_NAME, DATA_Y_NAME = "Birth Rate", "Life Expectancy"
-DATA_X_DESC, DATA_Y_DESC = "Live Births per 1,000 per Year", "Years"
+DATA_X_DESC, DATA_Y_DESC = "Live Births per 1,000 People per Year", "Years"
+DATASET = ""
+
+
+# ====
+# Define a function that computes the distance between two data points
+def distance(i, j):
+    x_i, y_i = i[0], i[1]
+    x_j, y_j = j[0], j[1]
+
+    return ((x_j - x_i) ** 2 + (y_j - y_i) ** 2) ** 0.5
 
 # Takes in an array i of data points and a single data point j
 # Returns an array of the Euclidean distances between i and j
@@ -103,7 +113,7 @@ def initialize_cluster_means(k, xy_values):
 # Prints the names of all of the datapoints in the cluster
 # Plots the cluster as a scatterplot. Supports different color/marker combinations
 # for up to 30 clusters before repeating. Means are marked as yellow diamonds.
-def kmeans(data, k, iterations):
+def kmeans(data, dataset_name, k, iterations):
 
     # Choose starting points for means and create list for storing pyplot.axis
     cluster_means = initialize_cluster_means(k, data['xy'])
@@ -188,7 +198,7 @@ def kmeans(data, k, iterations):
     plt.scatter(cluster_means_x, cluster_means_y, c='y', edgecolors='k', marker='D')
 
     # Add final labels and show
-    plt.title(DATA_X_NAME + " vs. " + DATA_Y_NAME + " for each " + DATA_NAME)
+    plt.title(DATA_X_NAME + " vs. " + DATA_Y_NAME + " for each " + DATA_NAME + " in " + dataset_name)
     plt.xlabel(DATA_X_NAME + " (" + DATA_X_DESC + ")")
     plt.ylabel(DATA_Y_NAME + " (" + DATA_Y_DESC + ")")
     plt.legend(bbox_to_anchor=(1, 1), loc='upper right', ncol=1)
@@ -196,30 +206,35 @@ def kmeans(data, k, iterations):
 
 def main():
     # Prompt user for the dataset to be used and reads in data from the appropriate file
-    dataset = input("Which dataset should be used? Please enter 1953, 2008, or both: ")
-    while dataset.lower()[:4] not in ["1953", "2008", "both"]:
-        print("\nYour choice was not understood. Please enter \"1953\", \"2008\", or \"both\".")
-        dataset = input("Which dataset should be used? Please enter 1953, 2008, or both: ")
+    dataset_name = input("Which dataset should be used? Please enter 1953, 2008, or both: ")
+    while dataset_name.lower()[:4] not in ["1953", "2008", "both"]:
+        dataset_name = input("\nYour choice was not understood. Please enter \"1953\", \"2008\", or \"both\": ")
         
-    data = csv_to_list("data"+dataset[:4].title()+".csv")
-
+    data = csv_to_list("data"+dataset_name[:4].title()+".csv")
+    if dataset_name == "both":
+        dataset_name = "both 1953 and 2008"
     # Prompt user for the number of clusters
     clusters = 0
+    prompt = "\nHow many clusters should be formed? Please enter a positive integer: "
     while clusters < 1:
         try:
-            clusters = int(input("\nHow many clusters should be formed? Please enter a positive integer: "))
+            clusters = int(input(prompt))
+            if clusters < 1:
+                prompt = "\nYour choice was not understood. Please enter a whole number greater than zero: "
         except ValueError:
-            print("\nYour choice was not understood. Please enter an integer greater than zero.")
+            prompt = "\nYour choice was not understood. Please enter a whole number greater than zero: "
 
-            
     # Prompt user for the number of iterations
     iterations = 0
+    prompt = "\nHow many iterations should be run? Please enter a positive integer: "
     while iterations < 1:
         try:
-            iterations = int(input("\nHow many iterations should be run? Please enter a positive integer: "))
+            iterations = int(input(prompt))
+            if iterations < 1:
+                prompt = "\nYour choice was not understood. Please enter a whole number greater than zero: "
         except ValueError:
-            print("\nYour choice was not understood. Please enter an integer greater than zero.")
+            prompt = "\nYour choice was not understood. Please enter a whole number greater than zero: "
             
-    kmeans(data, clusters, iterations)
+    kmeans(data, dataset_name, clusters, iterations)
 
 main()
